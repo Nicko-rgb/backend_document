@@ -118,12 +118,7 @@ app.post('/api/login', async (req, res) => {
         // Obtener los documentos enviados por la carrera del usuario
         const sentDocuments = await Document.find({ emisor: user.carrera });
 
-        res.json({ 
-            carrera: user.carrera, 
-            userId: user._id.toString(), 
-            receivedDocuments, 
-            sentDocuments 
-        });
+        res.json({ carrera: user.carrera, receivedDocuments, sentDocuments });
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
         res.status(500).json({ message: 'Error al iniciar sesión' });
