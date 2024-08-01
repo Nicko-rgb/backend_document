@@ -59,6 +59,9 @@ app.use((req, res, next) => {
 });
 app.use(cors());
 
+// Middleware para servir archivos estáticos desde la carpeta "uploads"
+app.use('/api/files', express.static(path.join(__dirname, 'uploads')));
+
 // Ruta para guardar los documentos a la base de datos
 app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
     try {
