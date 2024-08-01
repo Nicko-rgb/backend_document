@@ -13,8 +13,8 @@ app.use('/files', express.static(path.join(__dirname, 'files')));
 const uri = "mongodb+srv://mancillanixon7:um8xTFnPbq9eMwnx@systemdsi.mouqdaf.mongodb.net/system_documento?retryWrites=true&w=majority";
 
 mongoose.connect(uri)
-    .then(() => console.log('Conectado a MongoDB Atlas!'))
-    .catch((error) => console.error('Error conectando a MongoDB local:', error));
+.then(() => console.log('Conectado a MongoDB Atlas!'))
+.catch((error) => console.error('Error conectando a MongoDB local:', error));
 
 // Definir el modelo para registrar los documentos
 const documentSchema = new mongoose.Schema({
@@ -57,11 +57,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
-
-const cors = require('cors');
-app.use(cors({
-    origin: 'https://system-document-suiza.vercel.app' // Reemplaza con tu dominio
-}));
+app.use(cors());
 
 // Ruta para guardar los documentos a la base de datos
 app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
@@ -156,7 +152,7 @@ app.get('/api/documents', async (req, res) => {
 });
 
 // Iniciar el servidor
-const port = process.env.PORT || 5000; // Permitir que el entorno defina el puerto
+const port = 5000;
 app.listen(port, () => {
     console.log('\x1b[32mServidor Iniciado en el puerto \x1b[0m', port);
     console.log('http://localhost:5000');
