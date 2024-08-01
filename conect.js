@@ -57,7 +57,6 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
-app.use(cors());
 
 const cors = require('cors');
 app.use(cors({
