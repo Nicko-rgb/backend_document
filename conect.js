@@ -1,20 +1,29 @@
 const express = require('express');
-const app = express();
 const mongoose = require('mongoose');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 
+const app = express();
+
+// Configurar CORS
+app.use(cors({
+    origin: 'https://system-document-suiza.vercel.app' // Reemplaza con tu dominio
+}));
+
+// Middleware para parsear el cuerpo de las solicitudes
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Configurar el middleware para servir archivos estáticos
 app.use('/files', express.static(path.join(__dirname, 'files')));
 
 // Conectar a la base de datos MongoDB Atlas
-// const uri = "mongodb://localhost:27017/system_documento";
 const uri = "mongodb+srv://mancillanixon7:um8xTFnPbq9eMwnx@systemdsi.mouqdaf.mongodb.net/system_documento?retryWrites=true&w=majority";
 
-mongoose.connect(uri)
-.then(() => console.log('Conectado a MongoDB Atlas!'))
-.catch((error) => console.error('Error conectando a MongoDB local:', error));
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Conectado a MongoDB Atlas!'))
+    .catch((error) => console.error('Error conectando a MongoDB Atlas:', error));
 
 // Definir el modelo para registrar los documentos
 const documentSchema = new mongoose.Schema({
@@ -43,21 +52,7 @@ const storage = multer.diskStorage({
         cb(null, `${Date.now()}${path.extname(file.originalname)}`); // Generar un nombre único para el archivo
     },
 });
-
 const upload = multer({ storage: storage });
-
-// Middleware para parsear el cuerpo de las solicitudes
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Configurar CORS "ESTO ES MUY IMPORTANTE"
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://system-document-suiza.vercel.app/'); // Reemplaza con el dominio de tu aplicación React
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
-app.use(cors());
 
 // Ruta para guardar los documentos a la base de datos
 app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
@@ -152,8 +147,8 @@ app.get('/api/documents', async (req, res) => {
 });
 
 // Iniciar el servidor
-const port = 5000;
+const port = process.env.PORT || 5000; // Permitir que el entorno defina el puerto
 app.listen(port, () => {
     console.log('\x1b[32mServidor Iniciado en el puerto \x1b[0m', port);
-    console.log('http://localhost:5000');
+    console.log('http://localhost:' + port);
 });
