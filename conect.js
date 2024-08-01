@@ -68,6 +68,11 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
         const { nombre, apellido, dni, receptor, emisor, motivoArchivo, txtArchivo } = req.body;
         const archivo = req.file ? { filename: req.file.filename, path: req.file.path } : null;
 
+        // Validar que todos los campos requeridos estén presentes
+        if (!nombre || !apellido || !dni || !receptor || !emisor || !motivoArchivo) {
+            return res.status(400).json({ message: 'Todos los campos son requeridos' });
+        }
+
         const newDocument = new Document({
             nombre,
             apellido,
@@ -85,9 +90,10 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
         console.log('Nuevo Documento Enviado');
     } catch (error) {
         console.error('Error al guardar el documento:', error);
-        res.status(500).json({ message: 'Error al enviar el documento' });
+        res.status(500).json({ message: 'Error al enviar el documento', error: error.message });
     }
 });
+
 
 // Definir el modelo para la colección "admins"
 const adminSchema = new mongoose.Schema({
