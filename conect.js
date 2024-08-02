@@ -161,8 +161,8 @@ app.get('/api/documents', async (req, res) => {
 });
 
 // Iniciar el servidor
-const port = 5000;
+const port = process.env.PORT || 5001;
 app.listen(port, () => {
     console.log('\x1b[32mServidor Iniciado en el puerto \x1b[0m', port);
-    console.log('http://localhost:5000');
+    console.log('http://localhost:5001');
 });
