@@ -6,7 +6,7 @@ const cors = require('cors');
 const path = require('path');
 
 // Configurar el middleware para servir archivos estáticos
-app.use('/files', express.static(path.join(__dirname, 'files')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Conectar a la base de datos MongoDB Atlas
 // const uri = "mongodb://localhost:27017/system_documento";
@@ -37,10 +37,10 @@ const Document = mongoose.model('Document', documentSchema);
 // Configurar Multer para manejar la subida de archivos
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'files/'); // Directorio donde se guardarán los archivos
+        cb(null, 'uploads/'); // Cambia a 'uploads/' si es necesario
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}${path.extname(file.originalname)}`); // Generar un nombre único para el archivo
+        cb(null, `${Date.now()}${path.extname(file.originalname)}`);
     },
 });
 
@@ -59,9 +59,6 @@ app.use((req, res, next) => {
 });
 app.use(cors());
 
-// Middleware para servir archivos estáticos desde la carpeta "uploads"
-app.use('/api/files', express.static(path.join(__dirname, 'uploads')));
-
 // Ruta para guardar los documentos a la base de datos
 app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
     try {
@@ -72,7 +69,6 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
         if (!nombre || !apellido || !dni || !receptor || !emisor || !motivoArchivo) {
             return res.status(400).json({ message: 'Todos los campos son requeridos' });
         }
-
         const newDocument = new Document({
             nombre,
             apellido,
@@ -93,7 +89,6 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
         res.status(500).json({ message: 'Error al enviar el documento', error: error.message });
     }
 });
-
 
 // Definir el modelo para la colección "admins"
 const adminSchema = new mongoose.Schema({
@@ -164,5 +159,4 @@ app.get('/api/documents', async (req, res) => {
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log('\x1b[32mServidor Iniciado en el puerto \x1b[0m', port);
-    console.log('http://localhost:5001');
 });
