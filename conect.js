@@ -216,7 +216,7 @@ const tokenPasswordSchema = new mongoose.Schema({
 
 const TokenPassword = mongoose.model('TokenPassword', tokenPasswordSchema);
 
-// Configura el transportador de Nodemailer
+// Configurar el transportador de Nodemailer
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -226,7 +226,6 @@ const transporter = nodemailer.createTransport({
 });
 
 // Ruta para solicitar el restablecimiento de contraseña
-// Ruta para solicitar el restablecimiento de contraseña
 app.post('/api/reset-password', async (req, res) => {
     const { email } = req.body;
 
@@ -234,7 +233,7 @@ app.post('/api/reset-password', async (req, res) => {
         // Verificar si el email existe en la base de datos
         const admin = await Admin.findOne({ email });
         if (!admin) {
-            return res.status(404).send('No se encontró un administrador con este correo electrónico');
+            return res.status(404).json({ message: 'No se encontró un administrador con este correo electrónico' });
         }
 
         // Generar un token único
@@ -245,7 +244,7 @@ app.post('/api/reset-password', async (req, res) => {
         await tokenEntry.save();
 
         // Enviar el correo electrónico con el enlace para restablecer la contraseña
-        const resetLink = `https://system-document-suiza.vercel.app/${token}`; // Cambia esto a tu dominio real
+        const resetLink = `https://tu_dominio.com/reset-password/${token}`; // Cambia esto a tu dominio real
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -254,13 +253,12 @@ app.post('/api/reset-password', async (req, res) => {
         };
 
         await transporter.sendMail(mailOptions);
-        res.send('Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico.');
+        res.json({ message: 'Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico.' });
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).send('Error al procesar la solicitud');
+        console.error('Error al procesar la solicitud:', error);
+        res.status(500).json({ message: 'Error al procesar la solicitud' });
     }
 });
-
 
 // Ruta para verificar el token y mostrar el formulario para restablecer la contraseña
 app.get('/api/reset-password/:token', async (req, res) => {
@@ -270,14 +268,14 @@ app.get('/api/reset-password/:token', async (req, res) => {
         // Verificar si el token es válido y no ha expirado
         const tokenEntry = await TokenPassword.findOne({ token });
         if (!tokenEntry) {
-            return res.status(401).send('Token inválido o expirado');
+            return res.status(401).json({ message: 'Token inválido o expirado' });
         }
 
         // Aquí podrías enviar una respuesta que permita al cliente mostrar el formulario
-        res.status(200).send('Token válido. Puedes restablecer tu contraseña.');
+        res.status(200).json({ message: 'Token válido. Puedes restablecer tu contraseña.' });
     } catch (error) {
         console.error('Error al verificar el token:', error);
-        res.status(500).send('Error al verificar el token');
+        res.status(500).json({ message: 'Error al verificar el token' });
     }
 });
 
@@ -289,20 +287,20 @@ app.post('/api/new-password', async (req, res) => {
         // Verificar si el token es válido y no ha expirado
         const tokenEntry = await TokenPassword.findOne({ token });
         if (!tokenEntry) {
-            return res.status(401).send('Token inválido o expirado');
+            return res.status(401).json({ message: 'Token inválido o expirado' });
         }
 
         // Actualizar la contraseña del administrador
-        const hashedPassword = bcrypt.hashSync(newPassword, 10); // Hashear la nueva contraseña
+        const hashedPassword = await bcrypt.hash(newPassword, 10); // Hashear la nueva contraseña
         await Admin.updateOne({ email: tokenEntry.email }, { password: hashedPassword });
 
         // Eliminar el token de la base de datos
         await TokenPassword.deleteOne({ token });
 
-        res.send('Contraseña restablecida exitosamente');
+        res.json({ message: 'Contraseña restablecida exitosamente' });
     } catch (error) {
         console.error('Error al restablecer la contraseña:', error);
-        res.status(500).send('Error al restablecer la contraseña');
+        res.status(500).json({ message: 'Error al restablecer la contraseña' });
     }
 });
 
