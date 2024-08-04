@@ -92,14 +92,16 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
     }
 });
 
+
 // Definir el modelo para la colección "admins"
 const adminSchema = new mongoose.Schema({
     carrera: { type: String, required: true },
     admin: { type: String, required: true },
-    email: {type: String, require: true},
+    email: { type: String, required: true, unique: true }, // Asegúrate de que el email sea único
     password: { type: String, required: true },
 });
-const Admin = mongoose.model('admins', adminSchema);
+
+const Admin = mongoose.model('Admin', adminSchema);
 
 // Ruta para verificar si el email ya está registrado
 app.post('/api/check-email', async (req, res) => {
@@ -136,9 +138,10 @@ app.post('/api/register/admins', async (req, res) => {
         res.status(201).json({ message: 'Administrador registrado exitosamente' });
     } catch (error) {
         console.error('Error al registrar el administrador:', error);
-        res.status(500).json({ message: 'Error al registrar el administrador', error });
+        res.status(500).json({ message: 'Error al registrar el administrador', error: error.message });
     }
 });
+
 
 
 
