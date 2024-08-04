@@ -125,7 +125,7 @@ app.post('/api/register/admins', async (req, res) => {
         // Verificar si el email ya está registrado
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
-            return res.status(409).json({ message: 'El correo electrónico ya está registrado.' }); // Cambiar a 409 (Conflicto)
+            return res.status(409).json({ message: 'El correo electrónico ya está registrado.' });
         }
 
         // Hashear la contraseña antes de guardarla
@@ -139,6 +139,7 @@ app.post('/api/register/admins', async (req, res) => {
         res.status(500).json({ message: 'Error al registrar el administrador', error });
     }
 });
+
 
 
 
