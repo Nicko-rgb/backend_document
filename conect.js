@@ -101,18 +101,29 @@ const adminSchema = new mongoose.Schema({
 });
 const Admin = mongoose.model('admins', adminSchema);
 
-// Ruta para registrar un nuevo administrador
+//ruta para registrar nuevo administrador
 app.post('/api/register/admins', async (req, res) => {
     const { carrera, admin, email, password } = req.body;
 
     try {
-        const newAdmin = new Admin({ carrera, admin, email, password });
+        // Verificar si el email ya está registrado
+        const existingAdmin = await Admin.findOne({ email });
+        if (existingAdmin) {
+            return res.status(400).json({ message: 'El correo electrónico ya está registrado.' });
+        }
+
+        // Hashear la contraseña antes de guardarla
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newAdmin = new Admin({ carrera, admin, email, password: hashedPassword });
         await newAdmin.save();
         res.status(201).json({ message: 'Administrador registrado exitosamente' });
     } catch (error) {
+        console.error('Error al registrar el administrador:', error);
         res.status(500).json({ message: 'Error al registrar el administrador', error });
     }
 });
+
 
 // Ruta para verificar si el email ya está registrado
 app.post('/api/check-email', async (req, res) => {
@@ -144,8 +155,14 @@ app.get('/api/admins', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { admin, password } = req.body;
-        const user = await Admin.findOne({ admin, password });
+        const user = await Admin.findOne({ admin });
         if (!user) {
+            return res.status(401).json({ message: 'Credenciales inválidas' });
+        }
+
+        // Comparar la contraseña hasheada con la contraseña proporcionada
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
@@ -204,7 +221,6 @@ const transporter = nodemailer.createTransport({
         pass: 'aylt pjvp qivj rbrt' // Asegúrate de usar un método seguro para manejar las contraseñas
     }
 });
-
 // Ruta para solicitar el restablecimiento de contraseña
 app.post('/api/reset-password', async (req, res) => {
     const { email } = req.body;
@@ -237,6 +253,25 @@ app.post('/api/reset-password', async (req, res) => {
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Error al procesar la solicitud');
+    }
+});
+
+// Ruta para verificar el token y mostrar el formulario para restablecer la contraseña
+app.get('/api/reset-password/:token', async (req, res) => {
+    const { token } = req.params;
+
+    try {
+        // Verificar si el token es válido y no ha expirado
+        const tokenEntry = await TokenPassword.findOne({ token });
+        if (!tokenEntry) {
+            return res.status(401).send('Token inválido o expirado');
+        }
+
+        // Aquí podrías enviar una respuesta que permita al cliente mostrar el formulario
+        res.status(200).send('Token válido. Puedes restablecer tu contraseña.');
+    } catch (error) {
+        console.error('Error al verificar el token:', error);
+        res.status(500).send('Error al verificar el token');
     }
 });
 
