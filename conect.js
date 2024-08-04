@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
+const sharp = require('sharp');
+const Tesseract = require('tesseract.js');
 
 // Configurar el middleware para servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -13,8 +15,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const uri = "mongodb+srv://mancillanixon7:um8xTFnPbq9eMwnx@systemdsi.mouqdaf.mongodb.net/system_documento?retryWrites=true&w=majority";
 
 mongoose.connect(uri)
-.then(() => console.log('Conectado a MongoDB Atlas!'))
-.catch((error) => console.error('Error conectando a MongoDB local:', error));
+    .then(() => console.log('Conectado a MongoDB Atlas!'))
+    .catch((error) => console.error('Error conectando a MongoDB local:', error));
 
 // Definir el modelo para registrar los documentos
 const documentSchema = new mongoose.Schema({
@@ -152,6 +154,34 @@ app.get('/api/documents', async (req, res) => {
     } catch (error) {
         console.error('Error al obtener los documentos:', error);
         res.status(500).json({ message: 'Error al obtener los documentos' });
+    }
+});
+
+
+//ruta para reconstruir imagen
+app.post('/reconstruct-image', async (req, res) => {
+    try {
+        const imageBuffer = await req.body.image;
+        const text = await Tesseract.recognize(imageBuffer, 'eng');
+
+        const reconstructedImage = await sharp(imageBuffer)
+            .composite([
+                {
+                    input: Buffer.from(`
+              <svg width="${sharp.metadata.width}" height="${sharp.metadata.height}">
+                <text x="10" y="50" fill="red" font-size="24">${text.data.text}</text>
+              </svg>
+            `),
+                    gravity: sharp.gravity.NORTH_WEST,
+                },
+            ])
+            .png()
+            .toBuffer();
+
+        res.send(reconstructedImage);
+    } catch (error) {
+        console.error('Error al reconstruir la imagen:', error);
+        res.status(500).send('Error al reconstruir la imagen');
     }
 });
 
