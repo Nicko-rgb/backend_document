@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
-const sharp = require('sharp');
-const Tesseract = require('tesseract.js');
+const nodemailer = require('nodemailer'); //para enviar email
+
 
 // Configurar el middleware para servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -85,7 +85,7 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
 
         await newDocument.save();
         res.status(201).json({ message: 'Documento enviado - server' });
-        console.log('Nuevo Documento Enviado');
+        console.log('Nuevo Documento Enviado - server');
     } catch (error) {
         console.error('Error al guardar el documento:', error);
         res.status(500).json({ message: 'Error al enviar el documento', error: error.message });
@@ -96,9 +96,23 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
 const adminSchema = new mongoose.Schema({
     carrera: { type: String, required: true },
     admin: { type: String, required: true },
+    email: {type: String, require: true},
     password: { type: String, required: true },
 });
 const Admin = mongoose.model('admins', adminSchema);
+
+// Ruta para registrar un nuevo administrador
+app.post('/api/register/admins', async (req, res) => {
+    const { carrera, admin, email, password } = req.body;
+
+    try {
+        const newAdmin = new Admin({ carrera, admin, email, password });
+        await newAdmin.save();
+        res.status(201).json({ message: 'Administrador registrado exitosamente' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al registrar el administrador', error });
+    }
+});
 
 // Ruta para obtener los datos de la colección "admins"
 app.get('/api/admins', async (req, res) => {
@@ -157,31 +171,13 @@ app.get('/api/documents', async (req, res) => {
     }
 });
 
-
-//ruta para reconstruir imagen
-app.post('/reconstruct-image', async (req, res) => {
-    try {
-        const imageBuffer = await req.body.image;
-        const text = await Tesseract.recognize(imageBuffer, 'eng');
-
-        const reconstructedImage = await sharp(imageBuffer)
-            .composite([
-                {
-                    input: Buffer.from(`
-              <svg width="${sharp.metadata.width}" height="${sharp.metadata.height}">
-                <text x="10" y="50" fill="red" font-size="24">${text.data.text}</text>
-              </svg>
-            `),
-                    gravity: sharp.gravity.northwest,
-                },
-            ])
-            .png()
-            .toBuffer();
-
-        res.send(reconstructedImage);
-    } catch (error) {
-        console.error('Error al reconstruir la imagen:', error);
-        res.status(500).send('Error al reconstruir la imagen');
+////////////////////////////////////////////////////////////////////
+// Configura el transportador de Nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // o el servicio de correo que estés utilizando
+    auth: {
+        user: 'mancillanixon7@gmail.com',
+        pass: 'aylt pjvp qivj rbrt' // Asegúrate de usar un método seguro para manejar las contraseñas
     }
 });
 
