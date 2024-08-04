@@ -114,6 +114,21 @@ app.post('/api/register/admins', async (req, res) => {
     }
 });
 
+// Ruta para verificar si el email ya está registrado
+app.post('/api/check-email', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const existingAdmin = await Admin.findOne({ email });
+        if (existingAdmin) {
+            return res.status(409).json({ message: 'El correo electrónico ya está registrado' });
+        }
+        res.status(200).json({ message: 'El correo electrónico está disponible' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al verificar el correo electrónico', error });
+    }
+});
+
 // Ruta para obtener los datos de la colección "admins"
 app.get('/api/admins', async (req, res) => {
     try {
