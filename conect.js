@@ -101,7 +101,7 @@ const adminSchema = new mongoose.Schema({
 });
 const Admin = mongoose.model('admins', adminSchema);
 
-//ruta para registrar nuevo administrador
+// Ruta para registrar un nuevo administrador
 app.post('/api/register/admins', async (req, res) => {
     const { carrera, admin, email, password } = req.body;
 
@@ -109,7 +109,7 @@ app.post('/api/register/admins', async (req, res) => {
         // Verificar si el email ya está registrado
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
-            return res.status(400).json({ message: 'El correo electrónico ya está registrado.' });
+            return res.status(409).json({ message: 'El correo electrónico ya está registrado.' }); // Cambiar a 409 (Conflicto)
         }
 
         // Hashear la contraseña antes de guardarla
