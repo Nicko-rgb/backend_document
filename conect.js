@@ -143,10 +143,6 @@ app.post('/api/register/admins', async (req, res) => {
     }
 });
 
-
-
-
-
 // Ruta para obtener los datos de la colección "admins"
 app.get('/api/admins', async (req, res) => {
     try {
@@ -222,12 +218,13 @@ const TokenPassword = mongoose.model('TokenPassword', tokenPasswordSchema);
 
 // Configura el transportador de Nodemailer
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // o el servicio de correo que estés utilizando
+    service: 'gmail',
     auth: {
-        user: 'mancillanixon7@gmail.com',
-        pass: 'aylt pjvp qivj rbrt' // Asegúrate de usar un método seguro para manejar las contraseñas
+        user: process.env.EMAIL_USER, // Usar la variable de entorno
+        pass: process.env.EMAIL_PASS,  // Usar la variable de entorno
     }
 });
+
 // Ruta para solicitar el restablecimiento de contraseña
 app.post('/api/reset-password', async (req, res) => {
     const { email } = req.body;
