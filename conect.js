@@ -256,9 +256,10 @@ app.post('/api/reset-password', async (req, res) => {
         res.json({ message: 'Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico.' });
     } catch (error) {
         console.error('Error al procesar la solicitud:', error);
-        res.status(500).json({ message: 'Error al procesar la solicitud' });
+        res.status(500).json({ message: 'Error al procesar la solicitud', error: error.message });
     }
 });
+
 
 // Ruta para verificar el token y mostrar el formulario para restablecer la contraseña
 app.get('/api/reset-password/:token', async (req, res) => {
