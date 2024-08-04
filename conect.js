@@ -84,7 +84,7 @@ app.post('/api/registrar', upload.single('archivo'), async (req, res) => {
         });
 
         await newDocument.save();
-        res.status(201).json({ message: 'Documento enviado' });
+        res.status(201).json({ message: 'Documento enviado - server' });
         console.log('Nuevo Documento Enviado');
     } catch (error) {
         console.error('Error al guardar el documento:', error);
@@ -172,7 +172,7 @@ app.post('/reconstruct-image', async (req, res) => {
                 <text x="10" y="50" fill="red" font-size="24">${text.data.text}</text>
               </svg>
             `),
-                    gravity: sharp.gravity.NORTH_WEST,
+                    gravity: sharp.gravity.northwest,
                 },
             ])
             .png()
@@ -184,6 +184,7 @@ app.post('/reconstruct-image', async (req, res) => {
         res.status(500).send('Error al reconstruir la imagen');
     }
 });
+
 
 // Iniciar el servidor
 const port = process.env.PORT || 8080;
