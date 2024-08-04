@@ -5,7 +5,7 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const nodemailer = require('nodemailer'); //para enviar email
-
+require('dotenv').config(); // Asegúrate de tener dotenv instalado
 
 // Configurar el middleware para servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -187,12 +187,81 @@ app.get('/api/documents', async (req, res) => {
 });
 
 ////////////////////////////////////////////////////////////////////
+// Definir el modelo para los tokens de recuperación de contraseña
+const tokenPasswordSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    token: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now, expires: '1h' }, // El token expirará en 1 hora
+});
+
+const TokenPassword = mongoose.model('TokenPassword', tokenPasswordSchema);
+
 // Configura el transportador de Nodemailer
 const transporter = nodemailer.createTransport({
     service: 'gmail', // o el servicio de correo que estés utilizando
     auth: {
         user: 'mancillanixon7@gmail.com',
         pass: 'aylt pjvp qivj rbrt' // Asegúrate de usar un método seguro para manejar las contraseñas
+    }
+});
+
+// Ruta para solicitar el restablecimiento de contraseña
+app.post('/api/reset-password', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Verificar si el email existe en la base de datos
+        const admin = await Admin.findOne({ email });
+        if (!admin) {
+            return res.status(404).send('No se encontró un administrador con este correo electrónico');
+        }
+
+        // Generar un token único
+        const token = crypto.randomBytes(20).toString('hex');
+
+        // Guardar el token en la base de datos
+        const tokenEntry = new TokenPassword({ email, token });
+        await tokenEntry.save();
+
+        // Enviar el correo electrónico con el enlace para restablecer la contraseña
+        const resetLink = `http://tu_dominio.com/reset-password/${token}`; // Cambia esto a tu dominio real
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Restablecimiento de Contraseña',
+            text: `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`,
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.send('Se ha enviado un enlace para restablecer tu contraseña a tu correo electrónico.');
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Error al procesar la solicitud');
+    }
+});
+
+// Ruta para restablecer la contraseña
+app.post('/api/new-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    try {
+        // Verificar si el token es válido y no ha expirado
+        const tokenEntry = await TokenPassword.findOne({ token });
+        if (!tokenEntry) {
+            return res.status(401).send('Token inválido o expirado');
+        }
+
+        // Actualizar la contraseña del administrador
+        const hashedPassword = bcrypt.hashSync(newPassword, 10); // Hashear la nueva contraseña
+        await Admin.updateOne({ email: tokenEntry.email }, { password: hashedPassword });
+
+        // Eliminar el token de la base de datos
+        await TokenPassword.deleteOne({ token });
+
+        res.send('Contraseña restablecida exitosamente');
+    } catch (error) {
+        console.error('Error al restablecer la contraseña:', error);
+        res.status(500).send('Error al restablecer la contraseña');
     }
 });
 
