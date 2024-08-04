@@ -226,6 +226,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Ruta para solicitar el restablecimiento de contraseña
+// Ruta para solicitar el restablecimiento de contraseña
 app.post('/api/reset-password', async (req, res) => {
     const { email } = req.body;
 
@@ -244,7 +245,7 @@ app.post('/api/reset-password', async (req, res) => {
         await tokenEntry.save();
 
         // Enviar el correo electrónico con el enlace para restablecer la contraseña
-        const resetLink = `http://tu_dominio.com/reset-password/${token}`; // Cambia esto a tu dominio real
+        const resetLink = `https://system-document-suiza.vercel.app/${token}`; // Cambia esto a tu dominio real
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -259,6 +260,7 @@ app.post('/api/reset-password', async (req, res) => {
         res.status(500).send('Error al procesar la solicitud');
     }
 });
+
 
 // Ruta para verificar el token y mostrar el formulario para restablecer la contraseña
 app.get('/api/reset-password/:token', async (req, res) => {
