@@ -5,7 +5,7 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto'); // Asegúrate de importar el módulo crypto
-const bcrypt = require('bcryptjs'); // Cambia esto
+const bcrypt = require('bcryptjs'); 
 const nodemailer = require('nodemailer'); //para enviar email
 require('dotenv').config(); // Asegúrate de tener dotenv instalado
 
@@ -245,11 +245,11 @@ app.post('/api/reset-password', async (req, res) => {
         await tokenEntry.save();
 
         // Enviar el correo electrónico con el enlace para restablecer la contraseña
-        const resetLink = `https://tu_dominio.com/reset-password/${token}`; // Cambia esto a tu dominio real
+        const resetLink = `https://system-document-suiza.vercel.app/${token}`; // Cambia esto a tu dominio real
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
-            subject: 'Restablecimiento de Contraseña',
+            subject: 'Restablecimiento de Contraseña System Document',
             text: `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`,
         };
 
