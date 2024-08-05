@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
+const crypto = require('crypto'); // Asegúrate de importar el módulo crypto
 const bcrypt = require('bcryptjs'); // Cambia esto
 const nodemailer = require('nodemailer'); //para enviar email
 require('dotenv').config(); // Asegúrate de tener dotenv instalado
