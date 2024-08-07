@@ -56,7 +56,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Configurar CORS "ESTO ES MUY IMPORTANTE"
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://system-document-suiza.vercel.app/'); // Reemplaza con el dominio de tu aplicación React
+    res.setHeader('Access-Control-Allow-Origin', 'http://sitradu.dsisuiza.com/'); // Reemplaza con el dominio de tu aplicación React
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
